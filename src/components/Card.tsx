@@ -13,7 +13,8 @@ interface CardProps {
   const Card: React.FC<CardProps> = ({ suit, value, faceUp, selectable, isSelected, onClick }) => {
     const getCardImage = (): string => {
 
-        return faceUp ? `public/card-images/${suit}${value}.png` : 'public/card-images/faceDown.png';
+      return faceUp ? `/card-images/${suit}${value}.png` : '/card-images/faceDown.png';
+
     };
   
     const imageUrl = getCardImage();
