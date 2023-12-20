@@ -34,7 +34,7 @@ const Pile: React.FC<PileProps> = ({ pile, pileFaceUp, pileSelectable ,selectedP
         />
       ) : (
         <div className="empty-pile">
-          <img src='src/assets/card-images/emptyPile.png' alt='Empty Pile' />
+          <img src='/card-images/emptyPile.png' alt='Empty Pile' />
         </div>
       )}
     </div>
