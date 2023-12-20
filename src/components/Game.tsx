@@ -38,6 +38,8 @@ const Game: React.FC = () => {
 
   const [backButton2Visible, setBackButton2Visible] = useState<boolean>(false);
 
+  const [playerScore, setPlayerScore] = useState<number>(0);
+
 
 
 
@@ -63,6 +65,7 @@ const Game: React.FC = () => {
     setPile4FaceUp(true);
     setDiscardSelectable(false);
     setBackButton2Visible(false);
+    setPlayerScore(0);
     const suits = ['H', 'D', 'C', 'S'];
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
     let newDeck: CardProps[] = [];
@@ -205,7 +208,6 @@ const checkForDuplicates = (deck: CardProps[]) => {
 
 const makeMove = (cardFromHand: CardProps, cardFromPile: CardProps, handCardIndex: number, pileIndex?: number) => {
   if (!discardSelectable) {
-    // Normal game logic
     setDiscardPile(discardPile => [...discardPile, cardFromHand]);
     setTempStorage(tempStorage => [...tempStorage, {...cardFromPile, originPile: pileIndex}]);
 
@@ -256,6 +258,15 @@ const makeMove = (cardFromHand: CardProps, cardFromPile: CardProps, handCardInde
       setBackButton2Visible(false);
     }
 
+    setPlayerScore(playerScore => playerScore + 100);
+    console.log(`${playerScore} + 100 = ${playerScore + 100}`)
+
+    if (discardPile.length === 52)
+    {
+      setPlayerScore(playerScore => (playerScore + 100) * 5);
+      console.log(`${playerScore} * 5  = ${(playerScore + 100) * 5}`);
+    }
+
   }
 };
 
@@ -301,12 +312,108 @@ const backButton2 = () => {
   setPlayerHand(playerHand => [...playerHand, ...discardPile.slice(-numCardsToMove)]);
   setDiscardPile(discardPile => discardPile.slice(0, -numCardsToMove));
 
+  setPlayerScore(playerScore => playerScore - 100);
 
 };
 
 
 
 const endTurn = () => {
+
+  let cardNum = tempStorage.length;
+
+  console.log(cardNum);
+  let multi = 1;
+
+  let bonusPoints = 0;
+
+  const playedCards = discardPile.slice(discardPile.length - cardNum);
+
+  const calculateFlushBonus = (playedCards: CardProps[]): number => {
+    const suitCounts: Record<string, number> = {};
+    let bonusPoints = 0;
+  
+    playedCards.forEach(card => {
+      suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+    });
+  
+    Object.values(suitCounts).forEach(count => {
+      if (count > 1) {
+        switch (count) {
+          case 2:
+            bonusPoints += 5;
+            console.log('2 card same suit');
+            break;
+          case 3:
+            bonusPoints += 15;
+            console.log('3 card same suit');
+            break;
+          case 4:
+            bonusPoints += 30;
+            console.log('4 card same suit');
+            break;
+        }
+      }
+    });
+    console.log({bonusPoints});
+    return bonusPoints;
+  };
+
+  const calculateSameValBonus = (playedCards: CardProps[]): number => {
+    const valueCounts: Record<string, number> = {};
+    let bonusPoints = 0;
+  
+    playedCards.forEach(card => {
+      valueCounts[card.value] = (valueCounts[card.value] || 0) + 1;
+    });
+  
+    Object.values(valueCounts).forEach(count => {
+      if (count > 1) {
+        switch (count) {
+          case 2:
+            bonusPoints += 15;
+            console.log('2 card same val');
+            break;
+          case 3:
+            bonusPoints += 25;
+            console.log('3 card same val');
+            break;
+          case 4:
+            bonusPoints += 50;
+            console.log('4 card same val');
+            break;
+        }
+      }
+    });
+    console.log({bonusPoints});
+    return bonusPoints;
+  };
+  
+
+  switch (cardNum)
+  {
+    case 1: 
+      multi = 1;
+      break;
+    case 2: 
+      multi = 2;
+      break;
+    case 3:
+      multi = 3.5;
+      break;
+    case 4:
+      multi = 5;
+      break;
+  }
+
+  bonusPoints += calculateFlushBonus(playedCards);
+  bonusPoints += calculateSameValBonus(playedCards);
+
+  let turnScore = (cardNum + bonusPoints) * multi;
+  turnScore = Math.round(turnScore);
+  console.log(`(${cardNum}+${bonusPoints})*${multi} = rounded: ${turnScore}`);
+
+  setPlayerScore(playerScore => playerScore + turnScore);
 
   setPlayerHand(playerHand => [...playerHand, ...tempStorage.map(card => ({...card}))]);
 
@@ -325,6 +432,8 @@ const endTurn = () => {
 
   if (allPilesEmpty) {
     setDiscardSelectable(true);
+    setPlayerScore(playerScore => Math.round(turnScore + (playerScore * 1.5)));
+    console.log(`${playerScore} * 1.5 = rounded: ${Math.round(turnScore + (playerScore * 1.5))}`);
   }
 
 };
@@ -338,7 +447,7 @@ const endTurn = () => {
       <h1 className='label'>Card Compare</h1>
       <TempStorage cards={tempStorage}/>
       <div>
-      <h2></h2>
+      <h2>{playerScore} points</h2>
       <div className='parent-container'>
       <div className='pile-grid'>
         <Pile pile={pile1} onCardClick={(card) => handlePileCardClick(card, 1)} pileFaceUp={pile1FaceUp} pileSelectable={pile1FaceUp} selectedPileCard={selectedPileCard?.pileIndex === 1 ? selectedPileCard.card : null}/>
