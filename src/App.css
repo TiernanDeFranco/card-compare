@@ -1,0 +1,136 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+
+.card {
+  margin: 2px;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.playing-card {
+  animation-duration: 120;
+  margin: 2px;
+}
+
+.playing-card:hover {
+  transform: scale(1.05); 
+  cursor: pointer; 
+}
+
+.piles-container {
+  display: flex;
+  justify-content: center;
+}
+
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+
+.pile-grid {
+  max-width: fit-content;
+  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  grid-template-rows: 1fr 1fr;   
+  gap: 2px;
+  align-items: center;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1%;
+}
+
+
+.player-hand {
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  gap: 3px;
+  margin-top: 3%;
+  
+}
+
+.card-selected {
+  border: 5px solid white;
+  border-radius: 15px;
+
+}
+
+.temp-storage {
+  position: fixed;
+  left: 2%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px; /* Spacing between cards */
+}
+
+.end-turn-button {
+  margin-top: 5%;
+  margin-left: 5%;
+  border: 3px solid white;
+  background-image: linear-gradient(180deg, #e65a5a, #bb1430);
+}
+
+
+.back-button {
+  margin-top: 5%;
+  border: 3px solid white;
+  background-image: linear-gradient(180deg, #6090da, #2958a0);
+}
+
+.button:hover {
+  transform: scale(1.05); 
+  cursor: pointer; 
+}
+
+.temp-label {
+  font-weight: bold;
+  font-size: 22px;
+  border-bottom: 5px solid #d44444;
+}
+
+
+
+.label {
+  border-bottom: 5px solid #d44444;
+  margin-bottom: 0px;
+}
+
+
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centers content vertically */
+  align-items: center; /* Centers content horizontally */
+  min-height: 100vh; /* Full viewport height */
+  width: 100%; /* Full width */
+  margin: 0 auto; /* Horizontal centering if needed, but usually not necessary with flexbox */
+  padding: 15px; /* Adjust padding as needed */
+  box-sizing: border-box; /* Padding and border included in width/height */
+  
+}
+
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: hidden;
+}
