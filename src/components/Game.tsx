@@ -389,29 +389,12 @@ const endTurn = () => {
     return bonusPoints;
   };
   
-
-  switch (cardNum)
-  {
-    case 1: 
-      multi = 1;
-      break;
-    case 2: 
-      multi = 2;
-      break;
-    case 3:
-      multi = 3.5;
-      break;
-    case 4:
-      multi = 5;
-      break;
-  }
-
   bonusPoints += calculateFlushBonus(playedCards);
   bonusPoints += calculateSameValBonus(playedCards);
 
-  let turnScore = (cardNum + bonusPoints) * multi;
+  let turnScore = (1 + bonusPoints) * cardNum;
   turnScore = Math.round(turnScore);
-  console.log(`(${cardNum}+${bonusPoints})*${multi} = rounded: ${turnScore}`);
+  console.log(`(${1}+${bonusPoints})*${cardNum} = rounded: ${turnScore}`);
 
   setPlayerScore(playerScore => playerScore + turnScore);
 
