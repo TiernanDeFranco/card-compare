@@ -323,7 +323,6 @@ const endTurn = () => {
   let cardNum = tempStorage.length;
 
   console.log(cardNum);
-  let multi = 1;
 
   let bonusPoints = 0;
 
