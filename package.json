@@ -2,7 +2,7 @@
   "homepage": "http://tiernandefranco.github.io/card-compare/",
   "name": "card-compare",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -25,6 +25,7 @@
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "gh-pages": "^6.1.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
   }
