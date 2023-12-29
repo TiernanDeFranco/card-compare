@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 interface BonusDetail {
     points: number;
@@ -16,10 +16,6 @@ interface BonusDetail {
   }
   
   const PointsNotif: React.FC<PointsNotifProps> = ({ bonuses, points }) => {
-    let bonusTotal = bonuses.reduce((total, bonus) => {
-        return total + bonus.points;
-      }, 0); 
-      
     return (
       <div className="points-notification">
         {bonuses.map((bonus, index) => (

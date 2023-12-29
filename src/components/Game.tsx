@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import PlayerHand from './PlayerHand';
 import Pile from './Pile';
 import { TempStorage } from './TempStorage';
