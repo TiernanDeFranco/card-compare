@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PlayerHand from './PlayerHand';
 import Pile from './Pile';
 import { TempStorage } from './TempStorage';
+import PointsNotif from './PointsNotif';
 
 interface CardProps {
   suit: string;
@@ -36,9 +37,25 @@ const Game: React.FC = () => {
   const [discardPile, setDiscardPile] = useState<CardProps[]>([]);
   const [tempStorage, setTempStorage] = useState<CardProps[]>([]);
 
-  const [backButton2Visible, setBackButton2Visible] = useState<boolean>(false);
 
   const [playerScore, setPlayerScore] = useState<number>(0);
+
+  interface BonusDetail {
+    points: number;
+    reason: string;
+    key: number;
+  }
+
+  interface PointsDetail {
+    points: number;
+    reason: string;
+    key: number;
+  }
+  
+  
+  const [bonus, setBonus] = useState<BonusDetail[]>([]);
+  const [turnScore, setTurnScore] = useState<number>(0);
+  const [points, setPoints] = useState<PointsDetail[]>([]);
 
 
 
@@ -64,8 +81,10 @@ const Game: React.FC = () => {
     setPile3FaceUp(true);
     setPile4FaceUp(true);
     setDiscardSelectable(false);
-    setBackButton2Visible(false);
     setPlayerScore(0);
+    setBonus([]);
+    setTurnScore(0);
+    setPoints([]);
     const suits = ['H', 'D', 'C', 'S'];
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
     let newDeck: CardProps[] = [];
@@ -240,8 +259,15 @@ const makeMove = (cardFromHand: CardProps, cardFromPile: CardProps, handCardInde
       }
     }
   } else {
+
+    let points: PointsDetail[] = [
+
+    ];
+
     
-    setDiscardPile(discardPile => [...discardPile, cardFromHand]);
+    const newDiscardPile = [...discardPile, cardFromHand];
+  
+    setDiscardPile(newDiscardPile);
 
     setPlayerHand(currentHand => {
       let newHand = [...currentHand];
@@ -249,23 +275,19 @@ const makeMove = (cardFromHand: CardProps, cardFromPile: CardProps, handCardInde
       return newHand;
     });
 
-    if (playerHand.length < 4 && playerHand.length > 0) 
-    {
-      setBackButton2Visible(true);
-    }
-    else
-    {
-      setBackButton2Visible(false);
-    }
 
     setPlayerScore(playerScore => playerScore + 100);
     console.log(`${playerScore} + 100 = ${playerScore + 100}`)
+    points.push({ points: 100, reason: '1 card played - Final Four', key: Math.random() });
 
-    if (discardPile.length === 52)
+    if (newDiscardPile.length === 52)
     {
-      setPlayerScore(playerScore => (playerScore + 100) * 5);
-      console.log(`${playerScore} * 5  = ${(playerScore + 100) * 5}`);
+      setPlayerScore(playerScore => (playerScore + 100) * 2);
+      console.log(`${playerScore} * 2  = ${(playerScore + 100) * 2}`);
+      points.push({ points: playerScore, reason: 'Score x 2 - Final Card Played', key: Math.random() });
     }
+
+    setPoints(points);
 
   }
 };
@@ -309,6 +331,8 @@ const resetRound = () => {
 const backButton2 = () => {
   const numCardsToMove = 1;
 
+  
+
   setPlayerHand(playerHand => [...playerHand, ...discardPile.slice(-numCardsToMove)]);
   setDiscardPile(discardPile => discardPile.slice(0, -numCardsToMove));
 
@@ -319,6 +343,13 @@ const backButton2 = () => {
 
 
 const endTurn = () => {
+
+  let bonuses: BonusDetail[] = [
+  ];
+
+  let points: PointsDetail[] = [
+
+  ];
 
   let cardNum = tempStorage.length;
 
@@ -340,16 +371,19 @@ const endTurn = () => {
       if (count > 1) {
         switch (count) {
           case 2:
-            bonusPoints += 5;
+            bonusPoints += 15;
             console.log('2 card same suit');
+            bonuses.push({ points: 15, reason: "2 cards of same suit", key: Math.random() });
             break;
           case 3:
-            bonusPoints += 15;
+            bonusPoints += 25;
             console.log('3 card same suit');
+            bonuses.push({ points: 25, reason: "3 cards of same suit", key: Math.random() });
             break;
           case 4:
-            bonusPoints += 30;
+            bonusPoints += 35;
             console.log('4 card same suit');
+            bonuses.push({ points: 35, reason: "4 cards of same suit", key: Math.random() });
             break;
         }
       }
@@ -370,16 +404,19 @@ const endTurn = () => {
       if (count > 1) {
         switch (count) {
           case 2:
-            bonusPoints += 15;
+            bonusPoints += 25;
             console.log('2 card same val');
+            bonuses.push({ points: 25, reason: "2 cards of same value", key: Math.random() });
             break;
           case 3:
-            bonusPoints += 25;
+            bonusPoints += 35;
             console.log('3 card same val');
+            bonuses.push({ points: 35, reason: "3 cards of same suit", key: Math.random() });
             break;
           case 4:
             bonusPoints += 50;
             console.log('4 card same val');
+            bonuses.push({ points: 50, reason: "4 cards of same suit", key: Math.random() });
             break;
         }
       }
@@ -391,9 +428,27 @@ const endTurn = () => {
   bonusPoints += calculateFlushBonus(playedCards);
   bonusPoints += calculateSameValBonus(playedCards);
 
-  let turnScore = (1 + bonusPoints) * cardNum;
+  let turnScore = (cardNum + bonusPoints) * cardNum;
   turnScore = Math.round(turnScore);
-  console.log(`(${1}+${bonusPoints})*${cardNum} = rounded: ${turnScore}`);
+  console.log(`(${cardNum}+${bonusPoints})*${cardNum} = rounded: ${turnScore}`);
+
+  if (cardNum > 1)
+  {
+    if (bonusPoints < 1)
+    {
+      points.push({ points: turnScore, reason: `${cardNum} cards played x ${cardNum} cards`, key: Math.random() });
+    }
+    else
+    {
+    points.push({ points: turnScore, reason: `(${cardNum} cards + ${bonusPoints} bonus) x ${cardNum} cards`, key: Math.random() });
+    }
+  }
+  else
+  {
+    points.push({ points: turnScore, reason: '1 card played', key: Math.random() });
+  }
+
+  
 
   setPlayerScore(playerScore => playerScore + turnScore);
 
@@ -405,6 +460,12 @@ const endTurn = () => {
   setPile3FaceUp(true);
   setPile4FaceUp(true);
 
+
+
+  setBonus(bonuses);
+  setTurnScore(turnScore);
+  setPoints(points);
+
   
   if (checkForDuplicates(deck)) {
     console.error("Duplicate cards found in the deck");
@@ -414,9 +475,11 @@ const endTurn = () => {
 
   if (allPilesEmpty) {
     setDiscardSelectable(true);
-    setPlayerScore(playerScore => Math.round(turnScore + (playerScore * 1.5)));
-    console.log(`${playerScore} * 1.5 = rounded: ${Math.round(turnScore + (playerScore * 1.5))}`);
+    setPlayerScore(playerScore => Math.round(turnScore + (playerScore * 2)));
+    console.log(`${playerScore} * 2 = rounded: ${Math.round(turnScore + (playerScore * 2))}`);
+    points.push({ points: playerScore, reason: 'Score x 2 - Cleared Piles', key: Math.random() });
   }
+
 
 };
 
@@ -427,6 +490,10 @@ const endTurn = () => {
   return (
     <div className="game-container">
       <h1 className='label'>Card Compare</h1>
+      {
+      turnScore != 0 && <PointsNotif bonuses={bonus} points={points}/>
+      }
+      
       <TempStorage cards={tempStorage}/>
       <div>
       <h2>{playerScore} points</h2>
@@ -453,7 +520,7 @@ const endTurn = () => {
         </div>
       )}
 
-{backButton2Visible && (
+{(discardSelectable && playerHand.length < 4) && (
         <div>
            <button className='back-button' onClick={backButton2}>Back</button>
         </div>

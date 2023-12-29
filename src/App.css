@@ -116,13 +116,13 @@ h2 {
 .game-container {
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Centers content vertically */
-  align-items: center; /* Centers content horizontally */
-  min-height: 100vh; /* Full viewport height */
-  width: 100%; /* Full width */
-  margin: 0 auto; /* Horizontal centering if needed, but usually not necessary with flexbox */
-  padding: 15px; /* Adjust padding as needed */
-  box-sizing: border-box; /* Padding and border included in width/height */
+  justify-content: center;
+  align-items: center; 
+  min-height: 100vh; 
+  width: 100%; 
+  margin: 0 auto; 
+  padding: 15px; 
+  box-sizing: border-box; 
   
 }
 
@@ -133,4 +133,11 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-y: hidden;
+}
+
+.points-notification {
+  margin-top: 1%;
+  margin-bottom: 0px;
+  opacity: 0.95;
+  color: #bb1430;
 }
