@@ -3,6 +3,8 @@ import PlayerHand from './PlayerHand';
 import Pile from './Pile';
 import { TempStorage } from './TempStorage';
 import PointsNotif from './PointsNotif';
+import { auth, provider } from '../firebaseConfig';
+import { signInWithPopup} from 'firebase/auth';
 
 interface CardProps {
   suit: string;
@@ -40,6 +42,8 @@ const Game: React.FC = () => {
 
   const [playerScore, setPlayerScore] = useState<number>(0);
 
+  const [legalMovesLeft, setLegalMovesLeft] = useState<boolean>(true);
+
   interface BonusDetail {
     points: number;
     reason: string;
@@ -57,6 +61,10 @@ const Game: React.FC = () => {
   const [turnScore, setTurnScore] = useState<number>(0);
   const [points, setPoints] = useState<PointsDetail[]>([]);
 
+
+  const signInWithGoogle = async () => {
+   await signInWithPopup(auth, provider);
+  };
 
 
 
@@ -85,6 +93,7 @@ const Game: React.FC = () => {
     setBonus([]);
     setTurnScore(0);
     setPoints([]);
+    setLegalMovesLeft(true);
     const suits = ['H', 'D', 'C', 'S'];
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
     let newDeck: CardProps[] = [];
@@ -115,28 +124,37 @@ const Game: React.FC = () => {
     const newDeck = deck.slice(4);
 
       const pileSize = Math.floor(newDeck.length / 4);
-      setPile1(newDeck.slice(0, pileSize));
-      setPile2(newDeck.slice(pileSize, 2 * pileSize));
-      setPile3(newDeck.slice(2 * pileSize, 3 * pileSize));
-      setPile4(newDeck.slice(3 * pileSize, 4 * pileSize));
+
+      const newpile1 = newDeck.slice(0, pileSize);
+      const newpile2 = newDeck.slice(pileSize, 2 * pileSize);
+      const newpile3 = newDeck.slice(2 * pileSize, 3 * pileSize);
+      const newpile4 = newDeck.slice(3 * pileSize, 4 * pileSize);
+
+      setPile1(newpile1);
+      setPile2(newpile2);
+      setPile3(newpile3);
+      setPile4(newpile4);
 
     setPlayerHand(newPlayerHand);
 
-    console.log(newPlayerHand);
-    console.log(newDeck.slice(0, pileSize));
-    console.log(newDeck.slice(pileSize, 2 * pileSize));
-    console.log(newDeck.slice(2 * pileSize, 3 * pileSize));
-    console.log(newDeck.slice(3 * pileSize, 4 * pileSize));
+    const pile1Legal = checkForLegalMoves(newPlayerHand, newpile1);
+    const pile2Legal = checkForLegalMoves(newPlayerHand, newpile2);
+    const pile3Legal = checkForLegalMoves(newPlayerHand, newpile3);
+    const pile4Legal = checkForLegalMoves(newPlayerHand, newpile4);
+
+    if (!(pile1Legal || pile2Legal || pile3Legal || pile4Legal)) 
+    {
+      initializeDeck();
+    }
+
 
   };
 
   const handlePileCardClick = (card: CardProps, pileIndex: number) => {
     if (selectedPileCard && selectedPileCard.card.suit === card.suit && selectedPileCard.card.value === card.value) {
       setSelectedPileCard(null);
-      console.log(`Pile card deselected`);
     } else {
       setSelectedPileCard({ pileIndex, card }); 
-      console.log(`Card clicked from pile ${pileIndex}:`, card);
     }
   };
   
@@ -145,11 +163,9 @@ const handleHandCardClick = (card: CardProps, index: number) => {
   if (selectedCard && card.suit === selectedCard.suit && card.value === selectedCard.value) {
     setSelectedCard(null);
     setSelectedHandCardIndex(-1);
-    console.log(`Card selected : NULL`);
   } else {
     setSelectedCard(card); 
     setSelectedHandCardIndex(index);
-    console.log(`Card clicked from hand :`, card);
   }
   
 };
@@ -175,47 +191,78 @@ const compareCards = (cardFromHand: CardProps, cardFromPile: CardProps) => {
    const redSuits = ['D', 'H']; // Diamonds and Hearts
     if ((cardFromHand.value === 1 || cardFromPile.value === 1) && (cardFromHand.suit === cardFromPile.suit) && (cardFromHand.value != cardFromPile.value))
     {
-    console.log("Legal Move: Aces High-Low");
+
     makeMove(cardFromHand, cardFromPile, selectedHandCardIndex, selectedPileCard?.pileIndex);
     }
     else if ((cardFromHand.value === 1 || cardFromPile.value === 1) && (blackSuits.includes(cardFromHand.suit) && blackSuits.includes(cardFromPile.suit) && cardFromHand.suit != cardFromPile.suit)&& (cardFromHand.value != cardFromPile.value))
     {
-      console.log("Legal Move: Aces High-Low Black");
+
       makeMove(cardFromHand, cardFromPile, selectedHandCardIndex, selectedPileCard?.pileIndex);
     }
     else if ((cardFromHand.value === 1 || cardFromPile.value === 1) && (redSuits.includes(cardFromHand.suit) && redSuits.includes(cardFromPile.suit) && cardFromHand.suit != cardFromPile.suit)&& (cardFromHand.value != cardFromPile.value))
     {
-      console.log("Legal Move: Aces High-Low Red");
+
       makeMove(cardFromHand, cardFromPile, selectedHandCardIndex, selectedPileCard?.pileIndex);
     }
     else if (cardFromHand.value === cardFromPile.value && 
     ((blackSuits.includes(cardFromHand.suit) && redSuits.includes(cardFromPile.suit)) || 
      (redSuits.includes(cardFromHand.suit) && blackSuits.includes(cardFromPile.suit))))
     {
-    console.log("The cards are of opposite colors and have the same value.");
+
     makeMove(cardFromHand, cardFromPile, selectedHandCardIndex, selectedPileCard?.pileIndex);
     }
     else if ((cardFromHand.suit === cardFromPile.suit) && (cardFromHand.value < cardFromPile.value)) //Same Suit, Lower Value
     {
-        console.log("Legal Move (Same Suit Lower)");
+
         makeMove(cardFromHand, cardFromPile, selectedHandCardIndex, selectedPileCard?.pileIndex);
     }
     else if ((blackSuits.includes(cardFromHand.suit) && blackSuits.includes(cardFromPile.suit) && cardFromHand.suit != cardFromPile.suit) && cardFromHand.value > cardFromPile.value) //Compliment Higher Black
     {
-      console.log("Legal Move (Compliment Higher)");
+
       makeMove(cardFromHand, cardFromPile, selectedHandCardIndex, selectedPileCard?.pileIndex);
     }
     else if ((redSuits.includes(cardFromHand.suit) && redSuits.includes(cardFromPile.suit) && cardFromHand.suit != cardFromPile.suit) && cardFromHand.value > cardFromPile.value) //Compliment Higher Red
     {
-      console.log("Legal Move (Compliment Higher)");
+
       makeMove(cardFromHand, cardFromPile, selectedHandCardIndex, selectedPileCard?.pileIndex);
-    }
-    else
-    {
-      console.log('Illegal Move');
     }
   
 };
+
+const checkForLegalMoves = (hand: CardProps[], pile: CardProps[]): boolean => {
+  const blackSuits = ['S', 'C'];
+  const redSuits = ['D', 'H'];
+  const topPileCard = pile[pile.length - 1];
+
+  if (!topPileCard) return false;
+
+  for (let handCard of hand) {
+    if ((handCard.value === 1 || topPileCard.value === 1) && handCard.suit === topPileCard.suit && handCard.value !== topPileCard.value) {
+      return true;
+    }
+    if ((handCard.value === 1 || topPileCard.value === 1) && blackSuits.includes(handCard.suit) && blackSuits.includes(topPileCard.suit) && handCard.suit !== topPileCard.suit && handCard.value !== topPileCard.value) {
+      return true;
+    }
+    if ((handCard.value === 1 || topPileCard.value === 1) && redSuits.includes(handCard.suit) && redSuits.includes(topPileCard.suit) && handCard.suit !== topPileCard.suit && handCard.value !== topPileCard.value) {
+      return true;
+    }
+    if (handCard.value === topPileCard.value && ((blackSuits.includes(handCard.suit) && redSuits.includes(topPileCard.suit)) || (redSuits.includes(handCard.suit) && blackSuits.includes(topPileCard.suit)))) {
+      return true;
+    }
+    if (handCard.suit === topPileCard.suit && handCard.value < topPileCard.value) {
+      return true;
+    }
+    if (blackSuits.includes(handCard.suit) && blackSuits.includes(topPileCard.suit) && handCard.suit !== topPileCard.suit && handCard.value > topPileCard.value) {
+      return true;
+    }
+    if (redSuits.includes(handCard.suit) && redSuits.includes(topPileCard.suit) && handCard.suit !== topPileCard.suit && handCard.value > topPileCard.value) {
+      return true;
+    }
+  }
+  
+  return false;
+};
+
 
 
 const checkForDuplicates = (deck: CardProps[]) => {
@@ -269,25 +316,30 @@ const makeMove = (cardFromHand: CardProps, cardFromPile: CardProps, handCardInde
   
     setDiscardPile(newDiscardPile);
 
-    setPlayerHand(currentHand => {
-      let newHand = [...currentHand];
+    let newHand = [...playerHand];
       newHand.splice(handCardIndex, 1);
-      return newHand;
-    });
+      setPlayerHand(newHand);
 
 
     setPlayerScore(playerScore => playerScore + 100);
-    console.log(`${playerScore} + 100 = ${playerScore + 100}`)
+
     points.push({ points: 100, reason: '1 card played - Final Four', key: Math.random() });
 
     if (newDiscardPile.length === 52)
     {
       setPlayerScore(playerScore => (playerScore + 100) * 2);
-      console.log(`${playerScore} * 2  = ${(playerScore + 100) * 2}`);
+
       points.push({ points: playerScore, reason: 'Score x 2 - Final Card Played', key: Math.random() });
+    }
+    else
+    {
+      const discardLegal = checkForLegalMoves(newHand, newDiscardPile);
+      if (!discardLegal) setLegalMovesLeft(false);
     }
 
     setPoints(points);
+
+
 
   }
 };
@@ -353,7 +405,6 @@ const endTurn = () => {
 
   let cardNum = tempStorage.length;
 
-  console.log(cardNum);
 
   let bonusPoints = 0;
 
@@ -372,23 +423,23 @@ const endTurn = () => {
         switch (count) {
           case 2:
             bonusPoints += 15;
-            console.log('2 card same suit');
+    
             bonuses.push({ points: 15, reason: "2 cards of same suit", key: Math.random() });
             break;
           case 3:
             bonusPoints += 25;
-            console.log('3 card same suit');
+   
             bonuses.push({ points: 25, reason: "3 cards of same suit", key: Math.random() });
             break;
           case 4:
             bonusPoints += 35;
-            console.log('4 card same suit');
+
             bonuses.push({ points: 35, reason: "4 cards of same suit", key: Math.random() });
             break;
         }
       }
     });
-    console.log({bonusPoints});
+
     return bonusPoints;
   };
 
@@ -405,23 +456,22 @@ const endTurn = () => {
         switch (count) {
           case 2:
             bonusPoints += 25;
-            console.log('2 card same val');
             bonuses.push({ points: 25, reason: "2 cards of same value", key: Math.random() });
             break;
           case 3:
             bonusPoints += 35;
-            console.log('3 card same val');
+
             bonuses.push({ points: 35, reason: "3 cards of same suit", key: Math.random() });
             break;
           case 4:
             bonusPoints += 50;
-            console.log('4 card same val');
+    
             bonuses.push({ points: 50, reason: "4 cards of same suit", key: Math.random() });
             break;
         }
       }
     });
-    console.log({bonusPoints});
+ 
     return bonusPoints;
   };
   
@@ -430,7 +480,7 @@ const endTurn = () => {
 
   let turnScore = (cardNum + bonusPoints) * cardNum;
   turnScore = Math.round(turnScore);
-  console.log(`(${cardNum}+${bonusPoints})*${cardNum} = rounded: ${turnScore}`);
+
 
   if (cardNum > 1)
   {
@@ -448,11 +498,11 @@ const endTurn = () => {
     points.push({ points: turnScore, reason: '1 card played', key: Math.random() });
   }
 
-  
+  const newPlayerHand = [...playerHand, ...tempStorage.map(card => ({...card}))];
 
   setPlayerScore(playerScore => playerScore + turnScore);
 
-  setPlayerHand(playerHand => [...playerHand, ...tempStorage.map(card => ({...card}))]);
+  setPlayerHand(newPlayerHand);
 
   setTempStorage([]);
   setPile1FaceUp(true);
@@ -476,10 +526,20 @@ const endTurn = () => {
   if (allPilesEmpty) {
     setDiscardSelectable(true);
     setPlayerScore(playerScore => Math.round(turnScore + (playerScore * 2)));
-    console.log(`${playerScore} * 2 = rounded: ${Math.round(turnScore + (playerScore * 2))}`);
     points.push({ points: playerScore, reason: 'Score x 2 - Cleared Piles', key: Math.random() });
   }
 
+  
+
+  const pile1Legal = checkForLegalMoves(newPlayerHand, pile1);
+  const pile2Legal = checkForLegalMoves(newPlayerHand, pile2);
+  const pile3Legal = checkForLegalMoves(newPlayerHand, pile3);
+  const pile4Legal = checkForLegalMoves(newPlayerHand, pile4);
+
+  if (!(pile1Legal || pile2Legal || pile3Legal || pile4Legal)) 
+  {
+    setLegalMovesLeft(false);
+  }
 
 };
 
@@ -489,6 +549,7 @@ const endTurn = () => {
   // Render method
   return (
     <div className="game-container">
+      
       <h1 className='label'>Card Compare</h1>
       {
       turnScore != 0 && <PointsNotif bonuses={bonus} points={points}/>
@@ -497,6 +558,13 @@ const endTurn = () => {
       <TempStorage cards={tempStorage}/>
       <div>
       <h2>{playerScore} points</h2>
+      {!legalMovesLeft && <div> <div> <h2 className='legal-moves-left'>No Legal Moves Left :(</h2> 
+      <button className='score-button' onClick={signInWithGoogle}>Record Score</button> </div> 
+      <div>
+      <button className='restart-button'onClick={() => window.location.reload()}>Restart</button> </div> </div>
+      }
+      
+          
       <div className='parent-container'>
       <div className='pile-grid'>
         <Pile pile={pile1} onCardClick={(card) => handlePileCardClick(card, 1)} pileFaceUp={pile1FaceUp} pileSelectable={pile1FaceUp} selectedPileCard={selectedPileCard?.pileIndex === 1 ? selectedPileCard.card : null}/>
@@ -525,6 +593,8 @@ const endTurn = () => {
            <button className='back-button' onClick={backButton2}>Back</button>
         </div>
       )}
+
+     
       
       </div>
     </div>
