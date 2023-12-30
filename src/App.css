@@ -153,6 +153,7 @@ html, body {
   padding: 0;
   overflow-y: hidden;
   background-color: #274227;
+  color: whitesmoke;
 }
 
 .points-notification {
