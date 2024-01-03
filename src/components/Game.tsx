@@ -3,8 +3,14 @@ import PlayerHand from './PlayerHand';
 import Pile from './Pile';
 import { TempStorage } from './TempStorage';
 import PointsNotif from './PointsNotif';
-import { auth, provider } from '../firebaseConfig';
+import { auth, provider,db } from '../firebaseConfig';
 import { signInWithPopup} from 'firebase/auth';
+import 'firebase/auth';
+import 'firebase/firestore';
+import { addDoc, updateDoc, getDocs, collection, serverTimestamp, query, where} from 'firebase/firestore';
+import { FaCircleInfo } from "react-icons/fa6";
+import { RxCross2 } from "react-icons/rx";
+
 
 interface CardProps {
   suit: string;
@@ -44,6 +50,8 @@ const Game: React.FC = () => {
 
   const [legalMovesLeft, setLegalMovesLeft] = useState<boolean>(true);
 
+  const [openRules, setOpenRules] = useState<boolean>(false);
+
   interface BonusDetail {
     points: number;
     reason: string;
@@ -63,10 +71,62 @@ const Game: React.FC = () => {
 
 
   const signInWithGoogle = async () => {
-   await signInWithPopup(auth, provider);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      return result;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
+  const scoreRef = collection(db, "leaderboard");
 
+  const storeUserData = async (setPlayerScore: number) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const querySnapshot = await getDocs(query(
+      scoreRef,
+      where("user", "==", user.displayName),
+      where("timestamp", ">=", startOfDay)
+    ));
+  
+    const userData = {
+      score: setPlayerScore,
+      cardsLeft: 52 - discardPile.length,
+      user: user.displayName,
+      timestamp: serverTimestamp()
+    };
+  
+    if (querySnapshot.empty) {
+      await addDoc(scoreRef, userData);
+    } else {
+      const existingDoc = querySnapshot.docs[0];
+      const existingData = existingDoc.data();
+  
+      if (setPlayerScore > existingData.score) { 
+        const docRef = existingDoc.ref;
+        await updateDoc(docRef, userData);
+      }
+    }
+  };
+  
+  
+  const handleSignIn = async () => {
+    try {
+      const result = await signInWithGoogle();
+      if (result.user) {
+        const score = playerScore;
+        await storeUserData(score);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
 
   useEffect(() => {
     const newDeck = initializeDeck();
@@ -548,9 +608,19 @@ const endTurn = () => {
 
   // Render method
   return (
+
+    <>
+    {!openRules && (
     <div className="game-container">
       
-      <h1 className='label'>Card Compare</h1>
+      <div>
+        <h1 className='label'>
+          Card Compare‎ ‎ ‎ 
+          <button className='invisible' onClick={() => {setOpenRules(true)}}><FaCircleInfo/></button>
+        </h1>
+      </div>
+
+
       {
       turnScore != 0 && <PointsNotif bonuses={bonus} points={points}/>
       }
@@ -559,7 +629,7 @@ const endTurn = () => {
       <div>
       <h2>{playerScore} points</h2>
       {!legalMovesLeft && <div> <div> <h2 className='legal-moves-left'>No Legal Moves Left :(</h2> 
-      <button className='score-button' onClick={signInWithGoogle}>Record Score</button> </div> 
+      <button className='score-button' onClick={handleSignIn}>Record Score</button> </div> 
       <div>
       <button className='restart-button'onClick={() => window.location.reload()}>Restart</button> </div> </div>
       }
@@ -598,6 +668,48 @@ const endTurn = () => {
       
       </div>
     </div>
+    )}
+
+    {openRules && (
+
+<div>
+    <h1 className='label'>
+        Game Rules
+        <button className='invisible' onClick={() => { setOpenRules(false) }}><RxCross2 /></button>
+    </h1>
+
+    <p><strong>Card Compare:</strong> A strategic game with 52 cards divided into 4 piles and 4 cards in your hand.</p>
+     
+    <ul>
+        <li>Click a card from your hand and then the top card from one of the piles to compare.</li>
+        <li>Playing a card from your hand moves it to the discard pile, and the chosen pile card to the 'Cards to Pickup' pile.</li>
+        <li>End your turn by clicking [End Turn], merging 'Cards to Pickup' with your hand for the next turn. Plan your moves strategically.</li>
+    </ul>
+
+    <h4>Scoring</h4>
+    <p>Score = [(Number of Cards Played + Bonus Points) x Number of Cards Played]. More cards played per turn increase the score.
+      </p>
+
+      <h4>Bonus Points System</h4>
+  <ul>
+    <li>
+      <strong>Flush Bonus:</strong>
+      <span> Earn a bonus for playing multiple cards of the same suit. The bonus increases with more cards played.</span>
+    </li>
+    <li>
+      <strong>Same Value Bonus:</strong>
+      <span> Earn a bonus for playing multiple cards of the same value. More cards lead to a higher bonus.</span>
+    </li>
+  </ul>
+
+    <h4>Understanding Legal Moves</h4>
+    <h5>Rules are from the perspective of the card in your hand (bottom) compared to the card in the piles (top)</h5>
+    <img src='./rules/rule-image.png' style={{ width: '100%' }} alt="Detailed Rule Chart" />
+</div>
+
+
+    )}
+    </>
   );
 };
 

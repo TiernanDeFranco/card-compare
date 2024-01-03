@@ -163,3 +163,45 @@ html, body {
   color: #d44444;
   font-weight: 700;
 }
+
+
+.leaderboard-buttons {
+  margin-top: 2%;
+  display: grid;
+  grid-gap: 10px;
+  align-items: center;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 5%;
+}
+
+.leaderboard-button {
+  border: 2px solid white;
+  margin-bottom: 5%;
+  background-image: linear-gradient(180deg, #437550, #336133);
+}
+
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 70px;
+  row-gap: 25px;
+  text-align: center;
+  border-radius: 12px;
+  border: 2px solid white;
+  background-color: #4d4d4d57;
+  padding-bottom: 30px;
+}
+.leaderboard-header, .leaderboard-object {
+  display: contents; 
+}
+
+
+span {
+  padding: 5px;
+}
+
+.invisible {
+  background-color: transparent;
+  padding-block: 1px;
+  padding-inline: 2px;
+}
