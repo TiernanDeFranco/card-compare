@@ -596,9 +596,15 @@ const endTurn = () => {
   const pile3Legal = checkForLegalMoves(newPlayerHand, pile3);
   const pile4Legal = checkForLegalMoves(newPlayerHand, pile4);
 
-  if (!(pile1Legal || pile2Legal || pile3Legal || pile4Legal)) 
+  if (!(pile1Legal || pile2Legal || pile3Legal || pile4Legal) && (!allPilesEmpty)) 
   {
     setLegalMovesLeft(false);
+  }
+
+  if (allPilesEmpty)
+  {
+    const discardLegal = checkForLegalMoves(newPlayerHand, discardPile);
+    setLegalMovesLeft(discardLegal);
   }
 
 };
