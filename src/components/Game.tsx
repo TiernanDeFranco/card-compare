@@ -634,8 +634,14 @@ const endTurn = () => {
       <TempStorage cards={tempStorage}/>
       <div>
       <h2>{playerScore} points</h2>
-      {!legalMovesLeft && <div> <div> <h2 className='legal-moves-left'>No Legal Moves Left :(</h2> 
+      {!legalMovesLeft && (discardPile.length < 52) && <div> <div> <h2 className='legal-moves-left'>No Legal Moves Left :(</h2>  
       <button className='score-button' onClick={handleSignIn}>Record Score</button> </div> 
+      <div>
+      <button className='restart-button'onClick={() => window.location.reload()}>Restart</button> </div> </div>
+      }
+
+    {!legalMovesLeft && (discardPile.length === 52) && <div> <div> <h2 className='legal-moves-left'>You Won!</h2>
+    <button className='score-button' onClick={handleSignIn}>Record Score</button> </div> 
       <div>
       <button className='restart-button'onClick={() => window.location.reload()}>Restart</button> </div> </div>
       }
@@ -690,6 +696,7 @@ const endTurn = () => {
         <li>Click a card from your hand and then the top card from one of the piles to compare.</li>
         <li>Playing a card from your hand moves it to the discard pile, and the chosen pile card to the 'Cards to Pickup' pile.</li>
         <li>End your turn by clicking [End Turn], merging 'Cards to Pickup' with your hand for the next turn. Plan your moves strategically.</li>
+        <li>When all four piles are empty, the discard pile becomes the new, sole pile to compare against, play your cards wisely to ensure you can play as many as possible</li>
     </ul>
 
     <h4>Scoring</h4>
