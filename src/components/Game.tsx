@@ -482,19 +482,19 @@ const endTurn = () => {
       if (count > 1) {
         switch (count) {
           case 2:
-            bonusPoints += 15;
+            bonusPoints += 20;
     
-            bonuses.push({ points: 15, reason: "2 cards of same suit", key: Math.random() });
+            bonuses.push({ points: 20, reason: "2 cards of same suit", key: Math.random() });
             break;
           case 3:
-            bonusPoints += 25;
+            bonusPoints += 35;
    
-            bonuses.push({ points: 25, reason: "3 cards of same suit", key: Math.random() });
+            bonuses.push({ points: 35, reason: "3 cards of same suit", key: Math.random() });
             break;
           case 4:
-            bonusPoints += 35;
+            bonusPoints += 45;
 
-            bonuses.push({ points: 35, reason: "4 cards of same suit", key: Math.random() });
+            bonuses.push({ points: 45, reason: "4 cards of same suit", key: Math.random() });
             break;
         }
       }
@@ -519,14 +519,14 @@ const endTurn = () => {
             bonuses.push({ points: 25, reason: "2 cards of same value", key: Math.random() });
             break;
           case 3:
-            bonusPoints += 35;
+            bonusPoints += 50;
 
-            bonuses.push({ points: 35, reason: "3 cards of same suit", key: Math.random() });
+            bonuses.push({ points: 50, reason: "3 cards of same value", key: Math.random() });
             break;
           case 4:
-            bonusPoints += 50;
+            bonusPoints += 100;
     
-            bonuses.push({ points: 50, reason: "4 cards of same suit", key: Math.random() });
+            bonuses.push({ points: 100, reason: "4 cards of same value", key: Math.random() });
             break;
         }
       }
