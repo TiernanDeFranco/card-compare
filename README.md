@@ -23,7 +23,7 @@ Card Compare is a strategic single-player card game, originally created in real 
 ### Understanding Legal Moves
 - Rules are from the perspective of the card in your hand (bottom) compared to the card in the piles (top).
   
-![Detailed Rule Chart](public/assets/rules/rule-image.png)
+![Detailed Rule Chart](public/rules/rule-image.png)
 
 ###Technology
 I utilized React written in TypeScript with Vite for the frontend, and used Firebase Google Auth and Firestore for leaderboard storage.
