@@ -25,5 +25,5 @@ Card Compare is a strategic single-player card game, originally created in real 
   
 ![Detailed Rule Chart](public/rules/rule-image.png)
 
-###Technology
+### Technology
 I utilized React written in TypeScript with Vite for the frontend, and used Firebase Google Auth and Firestore for leaderboard storage.
